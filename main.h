@@ -20,6 +20,21 @@ typedef struct call
 	int (*f)(char *, va_list, int);
 } call_t;
 
+
+/**
+ * struct buffer_s - A new type defining a buffer struct.
+ * @buffer: A pointer to a character array.
+ * @start: A pointer to the start of buffer.
+ * @len: The length of the string stored in buffer.
+ */
+typedef struct buffer_s
+{
+	char *buffer;
+	char *start;
+	unsigned int len;
+} buffer_t;
+
+
 int _printf(const char *format, ...);
 int buff_append(char *buff_dest, va_list arg, int buff_count, char type);
 int print_buff(char *buff, unsigned int nbuff);
@@ -36,5 +51,13 @@ int parse_X(char *buff_dest, va_list arg, int buff_count);
 int parse_uint(char *buff_dest, va_list arg, int buff_count);
 int parse_rev(char *buff_dest, va_list arg, int buff_count);
 int parse_R13(char *buff_dest, va_list arg, int buff_count);
+
+buffer_t *init_buffer(void);
+void free_buffer(buffer_t *output);
+unsigned int _memcpy(buffer_t *output, const char *src, unsigned int n);
+unsigned int convert_sbase(buffer_t *output, long int num, char *base,
+		unsigned char flags, int wid, int prec);
+unsigned int convert_ubase(buffer_t *output, unsigned long int num, char *base,
+		unsigned char flags, int wid, int prec);
 
 #endif

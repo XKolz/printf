@@ -1,51 +1,90 @@
 #include "main.h"
 
-/**
- * _printf - formatted output conversion and print data.
- * @format: input string.
- *
- * Return: number of chars printed.
- */
+void cleanup(va_list args, buffer_t *output);
+int run_printf(const char *format, va_list args, buffer_t *output);
+int _printf(const char *format, ...);
 
+/**
+ * cleanup - Peforms cleanup operations for _printf.
+ * @args: A va_list of arguments provided to _printf.
+ * @output: A buffer_t struct.
+ */
+void cleanup(va_list args, buffer_t *output)
+{
+	va_end(args);
+	write(1, output->start, output->len);
+	free_buffer(output);
+}
+
+/**
+ * run_printf - Reads through the format string for _printf.
+ * @format: Character string to print - may contain directives.
+ * @output: A buffer_t struct containing a buffer.
+ * @args: A va_list of arguments.
+ *
+ * Return: The number of characters stored to output.
+ */
+int run_printf(const char *format, va_list args, buffer_t *output)
+{
+	int i, wid, prec, ret = 0;
+	char tmp;
+	unsigned char flags, len;
+	unsigned int (*f)(va_list, buffer_t *,
+			unsigned char, int, int, unsigned char);
+
+	for (i = 0; *(format + i); i++)
+	{
+		len = 0;
+		if (*(format + i) == '%')
+		{
+			tmp = 0;
+			flags = handle_flags(format + i + 1, &tmp);
+			wid = handle_width(args, format + i + tmp + 1, &tmp);
+			prec = handle_precision(args, format + i + tmp + 1,
+					&tmp);
+			len = handle_length(format + i + tmp + 1, &tmp);
+
+			f = handle_specifiers(format + i + tmp + 1);
+			if (f != NULL)
+			{
+				i += tmp + 1;
+				ret += f(args, output, flags, wid, prec, len);
+				continue;
+			}
+			else if (*(format + i + tmp + 1) == '\0')
+			{
+				ret = -1;
+				break;
+			}
+		}
+		ret += _memcpy(output, (format + i), 1);
+		i += (len != 0) ? 1 : 0;
+	}
+	cleanup(args, output);
+	return (ret);
+}
+
+/**
+ * _printf - Outputs a formatted string.
+ * @format: Character string to print - may contain directives.
+ *
+ * Return: The number of characters printed.
+ */
 int _printf(const char *format, ...)
 {
-	int i = 0, j = 0, buff_count = 0, prev_buff_count = 0;
-	char buffer[2000];
-	va_list arg;
-	call_t container[] = {
-		{'c', parse_char}, {'s', parse_str}, {'i', parse_int}, {'d', parse_int},
-		{'%', parse_perc}, {'b', parse_bin}, {'o', parse_oct}, {'x', parse_hex},
-		{'X', parse_X}, {'u', parse_uint}, {'R', parse_R13}, {'r', parse_rev},
-		{'\0', NULL}
-	};
+	buffer_t *output;
+	va_list args;
+	int ret;
 
-	if (!format)
+	if (format == NULL)
 		return (-1);
-	va_start(arg, format);
-	while (format && format[i] != '\0')
-	{
-		if (format[i] == '%')
-		{
-			i++, prev_buff_count = buff_count;
-			for (j = 0; container[j].t != '\0'; j++)
-			{
-				if (format[i] == '\0')
-					break;
-				if (format[i] == container[j].t)
-				{
-					buff_count = container[j].f(buffer, arg, buff_count);
-					break;
-				}
-			}
-			if (buff_count == prev_buff_count && format[i])
-				i--, buffer[buff_count] = format[i], buff_count++;
-		}
-		else
-			buffer[buff_count] = format[i], buff_count++;
-		i++;
-	}
-	va_end(arg);
-	buffer[buff_count] = '\0';
-	print_buff(buffer, buff_count);
-	return (buff_count);
+	output = init_buffer();
+	if (output == NULL)
+		return (-1);
+
+	va_start(args, format);
+
+	ret = run_printf(format, args, output);
+
+	return (ret);
 }
