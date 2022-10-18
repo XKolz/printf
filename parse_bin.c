@@ -7,26 +7,16 @@
  * @buff_count: index of buffer where the b of %b is
  * Return: New index
  */
-int parse_bin(char *buff_dest, va_list arg, int buff_count)
+
+unsigned int parse_bin(va_list args, buffer_t *output,
+		unsigned char flags, int wid, int prec, unsigned char len)
 {
-	unsigned int number = va_arg(arg, unsigned int);
-	unsigned int tmp = number;
-	int bin = 1;
+	unsigned int num;
 
-	while (tmp > 1)
-	{
-		bin *= 2;
-		tmp /= 2;
-	}
+	num = va_arg(args, unsigned int);
 
-	tmp = number;
-	while (bin > 0)
-	{
-		buff_dest[buff_count] = ('0' + tmp / bin);
-		tmp %= bin;
-		bin /= 2;
-		buff_count++;
-	}
+	(void)len;
 
-	return (buff_count);
+	return (convert_ubase(output, num, "01", flags, wid, prec));
 }
+

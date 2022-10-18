@@ -44,7 +44,8 @@ int parse_char(char *buff_dest, va_list arg, int buff_count);
 int parse_str(char *buff_dest, va_list arg, int buff_count);
 int parse_int(char *buff_dest, va_list list, int buff_count);
 int parse_perc(char *buff_dest, va_list arg, int buff_count);
-int parse_bin(char *buff_dest, va_list arg, int buff_count);
+unsigned int parse_bin(va_list args, buffer_t *output,
+		unsigned char flags, int wid, int prec, unsigned char len);
 int parse_oct(char *buff_dest, va_list arg, int buff_count);
 int parse_hex(char *buff_dest, va_list arg, int buff_count);
 int parse_X(char *buff_dest, va_list arg, int buff_count);
